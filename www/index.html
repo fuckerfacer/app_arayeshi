@@ -193,6 +193,9 @@
         }
         var search_for_moshtari = function (name, mobile) {
             var results = window.localStorage.getItem("moshtariha");
+            if (results == null) {
+                return false;
+            }
             var parsed = JSON.parse(results);
             for (var i = 0; i < parsed.length; i++) {
                 var current = parsed[i];
