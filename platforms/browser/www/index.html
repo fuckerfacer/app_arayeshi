@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <title>Arayeshgah</title>
+</head>
+
+<body>
+    <div class="main_app" id="pagemain">
+        <div class="header">Arayeshgah</div>
+        <div class="button" onclick="window.changePage('pageaddmoshtari')">اضافه کردن مشتری</div>
+        <div class="button" onclick="window.changePage('pagesearch')">جستجوی مشتری</div>
+    </div>
+    <div class="main_app" id="pageaddmoshtari">
+        <div class="header">
+            <span>Arayeshgah</span>
+            <img src="left-arrow.svg" alt="" class="header-left-arrow" onclick="window.changePage('pagemain')">
+        </div>
+        <div class="mid-aligned-text-fa">نام و نام خانوادگی</div>
+        <input type="text" class="input-text-fa" id="pageaddmoshtari_name">
+        <div class="form-spacer"></div>
+        <div class="mid-aligned-text-fa">شماره موبایل</div>
+        <input type="number" class="input-text-fa input-number-fa" id="pageaddmoshtari_mobile">
+        <div class="form-spacer"></div>
+        <div class="button" onclick="window.addmoshtari()">ثبت</div>
+        <div id="pageaddmoshtari_announce"></div>
+    </div>
+    <div class="main_app" id="pagesearch">
+        <div class="header">
+            <span>Arayeshgah</span>
+            <img src="left-arrow.svg" alt="" class="header-left-arrow" onclick="window.changePage('pagemain')">
+        </div>
+        <div class="mid-aligned-text-fa">نام و نام خانوادگی</div>
+        <input type="text" class="input-text-fa" id="pagesearch_name">
+        <div class="form-spacer"></div>
+        <div class="button" onclick="window.searchmoshtari()">جستجو</div>
+        <div id="pagesearch_announce"></div>
+        <div class="form-spacer"></div>
+        <div class="form-spacer"></div>
+        <div class="form-spacer"></div>
+        <div id="pagesearch_results"></div>
+    </div>
+    <style>
+        @font-face {
+            font-family: Yekan;
+            src: url(yekan.woff);
+        }
+
+        @font-face {
+            font-family: Attraction;
+            src: url(attraction.woff)
+        }
+
+        input[type='number'] {
+            -moz-appearance: textfield;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+
+        input {
+            outline: none;
+        }
+
+        html,
+        body,
+        .main_app {
+            width: 100%;
+            height: 100%;
+            user-select: none;
+            overflow: hidden;
+            font-size: x-large;
+            padding: 0px;
+            margin: 0px;
+            direction: rtl;
+            text-align: center;
+        }
+
+        .main_app {
+            overflow-y: auto;
+        }
+
+        .header {
+            text-align: center;
+            font-family: Attraction;
+            padding: 10px 0px;
+        }
+
+        .header-left-arrow {
+            width: 30px;
+            vertical-align: sub;
+            float: left;
+            margin: -30px;
+            position: relative;
+            top: 45px;
+            left: 45px;
+        }
+
+        .button {
+            font-family: Yekan;
+            text-align: center;
+            padding: 10px;
+            background: #eeeeee;
+            margin: 0 0 5px 0;
+        }
+
+        .button:active {
+            background: #004403;
+            color: white;
+        }
+
+        .mid-aligned-text-fa {
+            text-align: center;
+            font-family: Yekan;
+        }
+
+        .mid-aligned-text-spaced-98 {
+            width: 98%;
+            margin: 0 auto;
+        }
+
+        .success_occurred,
+        .error_occurred {
+            text-align: center;
+            font-family: Yekan;
+            padding: 5px 0 0 0;
+        }
+
+        .success_occurred {
+            color: #004403;
+        }
+
+        .error_occurred {
+            color: #9b0000;
+        }
+
+        .input-text-fa {
+            font-size: x-large;
+            font-family: Yekan;
+            width: 98%;
+            border: #eeeeee 1px solid;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .input-text-fa:focus {
+            border: #004403 1px solid;
+        }
+
+        .input-number-fa {
+            direction: ltr;
+        }
+
+        .form-spacer {
+            margin: 5px 0px;
+            height: 0.001px;
+        }
+    </style>
+    <script type="text/javascript" src="cordova.js"></script>
+    <script>
+        String.prototype.replaceAll = function (search, replacement) {
+            var target = this;
+            return target.split(search).join(replacement);
+        };
+        var pages = ["pagemain", "pageaddmoshtari", "pagesearch"];
+        window.changePage = function (name) {
+            for (var i = 0; i < pages.length; i++) {
+                if (pages[i] == name) {
+                    document.getElementById(pages[i]).style.display = "block";
+                }
+                else {
+                    document.getElementById(pages[i]).style.display = "none";
+                }
+            }
+        }
+        var do_announce = function (element, message, success = true, time = 2000) {
+            if (success) {
+                element.classList.add("success_occurred");
+            }
+            else {
+                element.classList.add("error_occurred");
+            }
+            element.innerHTML = message;
+            setTimeout(function () {
+                element.classList.remove("success_occurred");
+                element.classList.remove("error_occurred");
+                element.innerHTML = "";
+            }, time)
+        }
+        var search_for_moshtari = function (name, mobile) {
+            var results = window.localStorage.getItem("moshtariha");
+            var parsed = JSON.parse(results);
+            for (var i = 0; i < parsed.length; i++) {
+                var current = parsed[i];
+                if (current[0] == name || current[1] == mobile) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        var make_input_right = function (item) {
+            item.value = item.value.replaceAll("'", "");
+            item.value = item.value.replaceAll("\"", "");
+            item.value = item.value.trim();
+        }
+        window.addmoshtari = function () {
+            var pageaddmoshtari_name = document.getElementById("pageaddmoshtari_name");
+            var pageaddmoshtari_mobile = document.getElementById("pageaddmoshtari_mobile");
+            make_input_right(pageaddmoshtari_name); make_input_right(pageaddmoshtari_mobile);
+            var pageaddmoshtari_announce = document.getElementById("pageaddmoshtari_announce");
+            if (pageaddmoshtari_name.value == "" || pageaddmoshtari_mobile.value == "") {
+                do_announce(pageaddmoshtari_announce, "یکی از آیتم ها خالی مانده است", false);
+            }
+            else if (search_for_moshtari(pageaddmoshtari_name.value, pageaddmoshtari_mobile.value)) {
+                do_announce(pageaddmoshtari_announce, "فردی به این نام و یا شماره قبلا ثبت شده است", false);
+            }
+            else {
+                var results = window.localStorage.getItem("moshtariha");
+                if (results === null) {
+                    window.localStorage.setItem("moshtariha", JSON.stringify([
+                        [pageaddmoshtari_name.value, pageaddmoshtari_mobile.value, 0]
+                    ]));
+                }
+                else {
+                    var parsed = JSON.parse(results);
+                    parsed[parsed.length] = [pageaddmoshtari_name.value, pageaddmoshtari_mobile.value, 0];
+                    window.localStorage.setItem("moshtariha", JSON.stringify(parsed));
+                }
+                do_announce(pageaddmoshtari_announce, "مشتری ثبت شد", true);
+            }
+        }
+        window.searchmoshtari = function () {
+            var pagesearch_name = document.getElementById("pagesearch_name");
+            make_input_right(pagesearch_name);
+            var pagesearch_announce = document.getElementById("pagesearch_announce");
+            var pagesearch_results = document.getElementById("pagesearch_results");
+            var found_moshtaries = [];
+            var results = window.localStorage.getItem("moshtariha");
+            if (results === null) {
+                do_announce(pagesearch_announce, "لیست مشتریان خالی است", false)
+            }
+            else {
+                var parsed = JSON.parse(results);
+                for (var i = 0; i < parsed.length; i++) {
+                    var current = parsed[i];
+                    if (current[0].indexOf(pagesearch_name.value) > -1) {
+                        found_moshtaries[found_moshtaries.length] = current;
+                    }
+                }
+                if (found_moshtaries.length == 0) {
+                    do_announce(pagesearch_announce, "فردی با این نام پیدا نشد", false);
+                    pagesearch_results.innerHTML = '';
+                }
+                else {
+                    var list_of_moshtaries = "";
+                    for (var j = 0; j < found_moshtaries.length; j++) {
+                        list_of_moshtaries += '<div class="mid-aligned-text-fa mid-aligned-text-spaced-98"><span style="float: right;">نام</span>' + found_moshtaries[j][0] + '</div>' +
+                            '<div class="mid-aligned-text-fa mid-aligned-text-spaced-98"><span style="float: right;">موبایل</span>' + found_moshtaries[j][1] + '</div>' +
+                            '<div class="mid-aligned-text-fa mid-aligned-text-spaced-98"><span style="float: right;">دفعات آرایش</span>' + found_moshtaries[j][2] + '</div>' +
+                            '<div class="button" onclick="window.searchmoshtari_addarayesh(\'' + found_moshtaries[j][0] + '\', this)">اضافه کردن به دفعات آرایش</div>' +
+                            '<div class="form-spacer"></div><div class="form-spacer"></div>';
+                    }
+                    pagesearch_results.innerHTML = '<div class="mid-aligned-text-fa">مشتریان یافته شده</div><div class="form-spacer"></div>' + list_of_moshtaries;
+                }
+            }
+        }
+        window.searchmoshtari_addarayesh = function (name, item) {
+            var results = window.localStorage.getItem("moshtariha");
+            var parsed = JSON.parse(results);
+            var newValue = null;
+            for (var i = 0; i < parsed.length; i++) {
+                if (parsed[i][0] == name) {
+                    parsed[i][2] += 1;
+                    if (parsed[i][2] > 5) {
+                        parsed[i][2] = 0;
+                    }
+                    newValue = parsed[i][2];
+                }
+            }
+            window.localStorage.setItem("moshtariha", JSON.stringify(parsed));
+            item.previousSibling.innerHTML = '<span style="float: right;">دفعات آرایش</span>' + newValue;
+        }
+    </script>
+</body>
+
+</html>
